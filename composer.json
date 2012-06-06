@@ -1,0 +1,12 @@
+{
+    "name": "liip/magento-bundle",
+    "autoload": {
+        "psr-0": { "Liip": "" }
+    },
+    "require": {
+        "symfony/symfony": "2.1.*"
+    },
+    "suggest": {
+        "magento/magento": ">=1.7"
+    }
+}
