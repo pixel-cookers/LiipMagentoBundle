@@ -1,8 +1,9 @@
 {
     "name": "liip/magento-bundle",
     "autoload": {
-        "psr-0": { "Liip": "" }
+        "psr-0": { "Liip\\MagentoBundle": "" }
     },
+    "target-dir": "Liip/MagentoBundle",
     "require": {
         "symfony/symfony": "2.1.*"
     },
