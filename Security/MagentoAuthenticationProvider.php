@@ -38,7 +38,7 @@ class MagentoAuthenticationProvider implements AuthenticationProviderInterface, 
         if (!$this->supports($token)) {
             return null;
         }
-        
+
         try {
             if (!$presentedPassword = $token->getCredentials()) {
                 throw new BadCredentialsException('The presented password cannot be empty.');

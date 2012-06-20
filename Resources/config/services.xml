@@ -4,7 +4,7 @@
 
     <parameters>
         <parameter key="liip_magento.magento_user.class">Liip\MagentoBundle\Security\MagentoUser</parameter>
-        <parameter key="security.user.provider.concrete.magento.class">Liip\MagentoBundle\Security\MagentoUserProvider</parameter>
+        <parameter key="security.user.provider.magento.class">Liip\MagentoBundle\Security\MagentoUserProvider</parameter>
     </parameters>
     
     <services>
@@ -32,16 +32,18 @@
         </service>
 
         <service id="liip_magento.session.storage" class="Liip\MagentoBundle\SessionStorage\MagentoSessionStorage" public="false">
-            <argument>%liip_magento.session_namespace%</argument>
+            <!-- <argument>%liip_magento.session_namespace%</argument> -->
+            <argument>%session.storage.options%</argument>
+            <argument type="service" id="session.handler" />
         </service>
 
-        <service id="security.user.provider.concrete.magento" class="%security.user.provider.concrete.magento.class%">
+        <service id="security.user.provider.magento" class="%security.user.provider.magento.class%">
             <argument>%liip_magento.magento_user.class%</argument>
         </service>
 
         <service id="security.authentication.provider.magento" class="Liip\MagentoBundle\Security\MagentoAuthenticationProvider"
-            abstract="true" public="false">
-            <argument type="service" id="security.user.provider.concrete.magento" />
+           >
+            <argument /> <!-- User Provider -->
             <argument type="service" id="security.user_checker" />
             <argument /> <!-- Provider-shared Key -->
         </service>

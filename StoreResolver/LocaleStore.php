@@ -22,7 +22,7 @@ class LocaleStore implements StoreResolverInterface
      */
     public function resolve(Request $request)
     {
-        return $request->getSession()->getLocale();
+        return $request->getLocale();
     }
 }
 

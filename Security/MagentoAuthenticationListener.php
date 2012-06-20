@@ -2,9 +2,11 @@
 
 namespace Liip\MagentoBundle\Security;
 
+
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\Security\Http\HttpUtils;
 use Symfony\Component\Security\Http\Firewall\ListenerInterface;
 use Symfony\Component\Security\Http\SecurityEvents;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
@@ -274,7 +276,7 @@ class MagentoAuthenticationListener implements ListenerInterface
         if (null !== $this->successHandler) {
             $response = $this->successHandler->onAuthenticationSuccess($request, $token);
         } else {
-            $path = str_replace('{_locale}', $session->getLocale(), $this->determineTargetUrl($request));
+            $path = str_replace('{_locale}', $request->getLocale(), $this->determineTargetUrl($request));
             $response = new RedirectResponse(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
         }
 
