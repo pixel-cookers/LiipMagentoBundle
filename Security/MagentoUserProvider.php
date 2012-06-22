@@ -11,9 +11,12 @@ class MagentoUserProvider implements UserProviderInterface
 {
     protected $class;
 
-    public function __construct($class)
+    protected $loginType;
+
+    public function __construct($class, $loginType)
     {
         $this->class = $class;
+        $this->loginType = $loginType;
     }
 
     /**
@@ -21,13 +24,22 @@ class MagentoUserProvider implements UserProviderInterface
      */
     public function loadUserByUsername($id)
     {
-        $customer = \Mage::getModel('customer/customer')->load($id);
+        if ('admin' == $this->loginType) {
+            $user = \Mage::getModel('admin/user')->load($id);
+            $roleId = $user->getRole()? $user->getRole()->getId(): null;
 
-        if ($customer->getId()) {
-            return new $this->class($customer->getId(), $customer->getEmail(), $customer->getFirstname(), $customer->getLastname(), $customer->getGroupId());
+            if ($user->getId()) {
+                return new $this->class($user->getId(), $user->getEmail(), $user->getFirstname(), $user->getLastname(), $roleId, $user->getUsername(), true);
+            }
+        } else {
+            $customer = \Mage::getModel('customer/customer')->load($id);
+
+            if ($customer->getId()) {
+                return new $this->class($customer->getId(), $customer->getEmail(), $customer->getFirstname(), $customer->getLastname(), $customer->getGroupId());
+            }
         }
 
-        throw new UsernameNotFoundException(sprintf('User "%s" not found.', $email));
+        throw new UsernameNotFoundException(sprintf('User "%s" not found.', $id));
     }
 
     public function refreshUser(UserInterface $user)

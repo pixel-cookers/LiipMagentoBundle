@@ -6,7 +6,7 @@
         <parameter key="liip_magento.magento_user.class">Liip\MagentoBundle\Security\MagentoUser</parameter>
         <parameter key="security.user.provider.magento.class">Liip\MagentoBundle\Security\MagentoUserProvider</parameter>
     </parameters>
-    
+
     <services>
 
         <service id="liip_magento.listener" class="Liip\MagentoBundle\EventListener\MageListener">
@@ -22,18 +22,20 @@
             <argument type="service" id="file_locator" />
             <argument>%kernel.cache_dir%</argument>
         </service>
-        
+
         <service id="liip_magento.templating_name_parser" class="Liip\MagentoBundle\Templating\TemplateNameParser">
             <argument type="service" id="kernel" />
         </service>
-        
+
         <service id="liip_magento.store_resolver.default" class="Liip\MagentoBundle\StoreResolver\LocaleStore">
             <argument>%liip_magento.store_mappings%</argument>
         </service>
 
         <service id="liip_magento.session.storage" class="Liip\MagentoBundle\SessionStorage\MagentoSessionStorage" public="false">
-            <!-- <argument>%liip_magento.session_namespace%</argument> -->
-            <argument>%session.storage.options%</argument>
+            <argument type="collection">
+                <argument key="options">%session.storage.options%</argument>
+                <argument key="parameters">%liip_magento.session_parameters%</argument>
+            </argument>
             <argument type="service" id="session.handler" />
         </service>
 
@@ -41,11 +43,21 @@
             <argument>%liip_magento.magento_user.class%</argument>
         </service>
 
-        <service id="security.authentication.provider.magento" class="Liip\MagentoBundle\Security\MagentoAuthenticationProvider"
-           >
+        <service id="security.user.provider.magento.admin" class="%security.user.provider.magento.class%">
+            <argument>%liip_magento.magento_user.class%</argument>
+            <argument type="string">admin</argument>
+        </service>
+
+        <service id="security.user.provider.magento.customer" class="%security.user.provider.magento.class%">
+            <argument>%liip_magento.magento_user.class%</argument>
+            <argument type="string">customer</argument>
+        </service>
+
+        <service id="security.authentication.provider.magento" class="Liip\MagentoBundle\Security\MagentoAuthenticationProvider">
             <argument /> <!-- User Provider -->
             <argument type="service" id="security.user_checker" />
             <argument /> <!-- Provider-shared Key -->
+            <argument /> <!-- login_type -->
         </service>
 
         <service id="security.authentication.listener.magento" class="Liip\MagentoBundle\Security\MagentoAuthenticationListener" abstract="true">
@@ -60,7 +72,8 @@
             <argument type="service" id="security.authentication.failure_handler" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
             <argument type="service" id="event_dispatcher" on-invalid="null" />
-            <argument type="service" id="security.user.provider.concrete.magento" /> <!-- User Provider -->
+            <argument /> <!-- User Provider -->
         </service>
+
     </services>
 </container>

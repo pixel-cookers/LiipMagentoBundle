@@ -21,8 +21,9 @@ class MagentoAuthenticationProvider implements AuthenticationProviderInterface, 
     protected $userProvider;
     protected $userChecker;
     protected $providerKey;
+    protected $loginType;
 
-    public function __construct(UserProviderInterface $userProvider, UserCheckerInterface $userChecker, $providerKey)
+    public function __construct(UserProviderInterface $userProvider, UserCheckerInterface $userChecker, $providerKey, $loginType)
     {
         if (empty($providerKey)) {
             throw new \InvalidArgumentException('$providerKey must not be empty.');
@@ -31,6 +32,7 @@ class MagentoAuthenticationProvider implements AuthenticationProviderInterface, 
         $this->userProvider = $userProvider;
         $this->userChecker = $userChecker;
         $this->providerKey = $providerKey;
+        $this->loginType = $loginType;
     }
 
     public function authenticate(TokenInterface $token)
@@ -44,9 +46,14 @@ class MagentoAuthenticationProvider implements AuthenticationProviderInterface, 
                 throw new BadCredentialsException('The presented password cannot be empty.');
             }
 
-            if (\Mage::getSingleton('customer/session')->login($token->getUsername(), $token->getCredentials())) {
+            if (\Mage::getSingleton($this->loginType .'/session')->login($token->getUsername(), $token->getCredentials())) {
 
-                $id = \Mage::getSingleton('customer/session')->getCustomerId();
+                if ('admin' == $this->loginType) {
+                    $adminUser = \Mage::getSingleton('admin/session')->getUser();
+                    $id = $user->getId();
+                } else {
+                    $id = \Mage::getSingleton($this->loginType .'/session')->getCustomerId();
+                }
 
                 $user = $this->userProvider->loadUserByUsername($id);
 
@@ -76,6 +83,6 @@ class MagentoAuthenticationProvider implements AuthenticationProviderInterface, 
     public function logout(Request $request, Response $response, TokenInterface $token)
     {
         // Logout Magento session
-        \Mage::getSingleton('customer/session')->logout();
+        \Mage::getSingleton($this->loginType . '/session')->logout();
     }
 }

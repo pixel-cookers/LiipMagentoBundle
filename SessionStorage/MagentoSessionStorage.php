@@ -15,11 +15,18 @@ class MagentoSessionStorage extends NativeSessionStorage
 
     public function __construct(array $options = array(), $handler = null, MetadataBag $metaBag = null)
     {
-        if (isset($option['session_namespace'])) {
-            $sessionNamespace = $option('session_namespace');
-        } else {
-            $sessionNamespace = 'frontend';
+        if (!isset($_SERVER['REQUEST_URI']) || !class_exists('Mage')) {
+            return parent::__construct($options, $handler, $metaBag);
         }
+
+        $sessionNamespace = 'frontend';
+        foreach ($options['parameters'] as $param) {
+            if (0 === strpos($_SERVER['REQUEST_URI'], $param['path'])) {
+                $sessionNamespace = $param['namespace'];
+                break;
+            }
+        }
+        $options = $options['options'];
 
         if (isset($options['cookie_path'])) {
             \Mage::app()->getStore()->setConfig(\Mage_Core_Model_Cookie::XML_PATH_COOKIE_PATH, $options['cookie_path']);
@@ -27,11 +34,8 @@ class MagentoSessionStorage extends NativeSessionStorage
 
         parent::__construct($options, $handler, $metaBag);
 
-
         $this->session = \Mage::getSingleton('core/session',
                 array('name' => $sessionNamespace));
-
-
     }
 
     /**

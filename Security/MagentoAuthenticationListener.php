@@ -45,7 +45,18 @@ class MagentoAuthenticationListener implements ListenerInterface
     private $userProvider;
     private $csrfProvider;
 
-    public function __construct(SecurityContextInterface $securityContext, AuthenticationManagerInterface $authenticationManager, SessionAuthenticationStrategyInterface $sessionStrategy, HttpUtils $httpUtils, $providerKey, array $options = array(), AuthenticationSuccessHandlerInterface $successHandler = null, AuthenticationFailureHandlerInterface $failureHandler = null, LoggerInterface $logger = null, EventDispatcherInterface $dispatcher = null, $userProvider = null, CsrfProviderInterface $csrfProvider = null)
+    public function __construct(SecurityContextInterface $securityContext,
+            AuthenticationManagerInterface $authenticationManager,
+            SessionAuthenticationStrategyInterface $sessionStrategy,
+            HttpUtils $httpUtils,
+            $providerKey,
+            array $options = array(),
+            AuthenticationSuccessHandlerInterface $successHandler = null,
+            AuthenticationFailureHandlerInterface $failureHandler = null,
+            LoggerInterface $logger = null,
+            EventDispatcherInterface $dispatcher = null,
+            $userProvider = null,
+            CsrfProviderInterface $csrfProvider = null)
     {
         if (empty($providerKey)) {
             throw new \InvalidArgumentException('$providerKey must not be empty.');
@@ -58,6 +69,7 @@ class MagentoAuthenticationListener implements ListenerInterface
         $this->successHandler = $successHandler;
         $this->failureHandler = $failureHandler;
         $this->options = array_merge(array(
+            'login_type'                     => 'customer', // or admin
             'check_path'                     => '/login_check',
             'login_path'                     => '/login',
             'always_use_default_target_path' => false,
@@ -126,7 +138,7 @@ class MagentoAuthenticationListener implements ListenerInterface
 
         } else {
 
-            if (!\Mage::getSingleton('customer/session')->isLoggedIn()) {
+            if (!\Mage::getSingleton($this->options['login_type'] . '/session')->isLoggedIn()) {
                 return;
             }
 
@@ -135,7 +147,13 @@ class MagentoAuthenticationListener implements ListenerInterface
             }
 
             try {
-                $id = \Mage::getSingleton('customer/session')->getCustomerId();
+                if ('admin' == $this->options['login_type']) {
+                    $adminUser = \Mage::getSingleton('admin/session')->getUser();
+
+                    $id = $adminUser->getUserId();
+                } else {
+                    $id = \Mage::getSingleton($this->options['login_type'].'/session')->getCustomerId();
+                }
 
                 $user = $this->userProvider->loadUserByUsername($id);
 
