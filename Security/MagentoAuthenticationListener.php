@@ -103,9 +103,9 @@ class MagentoAuthenticationListener implements ListenerInterface
             return;
         }
 
+        /** @var $request Symfony\Component\HttpFoundation\Request */
         $request = $event->getRequest();
         if ($this->requiresAuthentication($request)) {
-
             if (!$request->hasSession()) {
                 throw new \RuntimeException('This authentication method requires a session.');
             }
@@ -139,6 +139,9 @@ class MagentoAuthenticationListener implements ListenerInterface
         } else {
 
             if (!\Mage::getSingleton($this->options['login_type'] . '/session')->isLoggedIn()) {
+                if ($this->options['login_type'] === 'customer') {
+                    \Mage::getSingleton('customer/session')->setBeforeAuthUrl($request->getUri());
+                }
                 return;
             }
 
